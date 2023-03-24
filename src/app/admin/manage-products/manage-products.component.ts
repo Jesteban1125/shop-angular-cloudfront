@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
+import { NotificationService } from 'src/app/core/notification.service';
 import { Product } from '../../products/product.interface';
 import { ProductsService } from '../../products/products.service';
 import { ManageProductsService } from './manage-products.service';
@@ -19,7 +20,8 @@ export class ManageProductsComponent implements OnInit {
   constructor(
     private readonly productsService: ProductsService,
     private readonly manageProductsService: ManageProductsService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -31,11 +33,19 @@ export class ManageProductsComponent implements OnInit {
       return;
     }
 
-    this.manageProductsService
-      .uploadProductsCSV(this.selectedFile)
-      .subscribe(() => {
+    this.manageProductsService.uploadProductsCSV(this.selectedFile).subscribe(
+      () => {
         this.selectedFile = null;
         this.cdr.markForCheck();
-      });
+      },
+      (error) => {
+        if ([401, 403].includes(error.status)) {
+          this.notificationService.showError(
+            `An error has occurred with the authentication process. Check your credentials. [${error.status}]`,
+            0
+          );
+        }
+      }
+    );
   }
 }
