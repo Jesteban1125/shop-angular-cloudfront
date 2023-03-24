@@ -33,6 +33,9 @@ export class ManageProductsService extends ApiService {
     const url = this.getUrl('import', 'import');
 
     return this.http.get<{ url: string }>(url, {
+      headers: {
+        Authorization: `Basic ${localStorage.getItem('authorization_token')}`,
+      },
       params: {
         name: fileName,
       },
